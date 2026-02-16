@@ -1,0 +1,33 @@
+{
+  "name": "@rezzedai/guardian",
+  "version": "0.1.0",
+  "description": "Safety rails, audit trail, and budget enforcement for AI agent sessions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "guardian": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    ".guardian/policy.default.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rezzedai/guardian.git"
+  },
+  "keywords": ["ai-safety", "claude-code", "hook", "audit", "security", "guardrails"],
+  "author": "rezzedai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rezzedai/guardian/issues"
+  },
+  "homepage": "https://github.com/rezzedai/guardian#readme",
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "typescript": "^5.9.3"
+  }
+}
