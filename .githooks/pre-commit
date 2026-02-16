@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+# arsenal-pre-commit-hook.sh — Pre-commit hook for rezzedai public repos.
+# Prevents accidental commits of Grid references, secrets, and .env files.
+#
+# Installation (per-repo):
+#   cp grid/workflows/arsenal-pre-commit-hook.sh <repo>/.git/hooks/pre-commit
+#   chmod +x <repo>/.git/hooks/pre-commit
+#
+# Or install globally:
+#   git config --global core.hooksPath /path/to/hooks/
+#   cp arsenal-pre-commit-hook.sh /path/to/hooks/pre-commit
+
+set -euo pipefail
+
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+BLOCKED=0
+
+# --- Grid program names (case-insensitive) ---
+# Matches whole words only to avoid false positives (e.g., "isolate" matching "iso")
+GRID_PROGRAMS=(
+  "\\bBASHER\\b"
+  "\\bSARK\\b"
+  "\\bRADIA\\b"
+  "\\b(^|[^a-zA-Z])ISO([^a-zA-Z]|$)"
+  "\\bALAN\\b"
+  "\\bQUORRA\\b"
+  "\\bCASP\\b"
+  "\\bDUMONT\\b"
+  "\\bRINZLER\\b"
+  "\\bGEM\\b"
+  "\\bTRON\\b"
+  "\\bYORI\\b"
+  "\\bRAM\\b"
+  "\\bFlynn\\b"
+)
+
+# --- Grid architecture terms ---
+GRID_TERMS=(
+  "ANTI-STACK"
+  "Guiding Light"
+  "cachebash"
+  "CacheBash"
+  "GridRelay"
+  "grid/decisions/"
+  "grid/workflows/"
+  "grid/programs/"
+  "grid/stores/"
+  "grid/basher/"
+  "grid/sark/"
+  "grid/alan/"
+  "worktree/sark"
+  "worktree/basher"
+  "worktree/alan"
+  "CONSTITUTION\\.md"
+  "addendum-[a-c]"
+  "Dream Mode"
+  "Relay v0\\.2"
+  "VFR handshake"
+  "derez protocol"
+)
+
+# --- Secret patterns ---
+SECRET_PATTERNS=(
+  "\\.env$"
+  "\\.env\\.local$"
+  "\\.env\\.production$"
+  "credentials\\.json"
+  "serviceAccount.*\\.json"
+  "id_rsa"
+  "id_ed25519"
+  "\\.pem$"
+)
+
+# --- API key patterns (in file content) ---
+KEY_PATTERNS=(
+  "AKIA[0-9A-Z]{16}"
+  "sk-[a-zA-Z0-9]{20,}"
+  "-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
+  "Bearer [A-Za-z0-9+/=_-]{20,}"
+)
+
+# Get staged files
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+# Get staged diff content
+DIFF_CONTENT=$(git diff --cached --unified=0 2>/dev/null || true)
+
+# Get commit message (if available via prepare-commit-msg)
+COMMIT_MSG=""
+if [ -f ".git/COMMIT_EDITMSG" ]; then
+  COMMIT_MSG=$(cat .git/COMMIT_EDITMSG 2>/dev/null || true)
+fi
+
+# --- Check branch name ---
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+if echo "$BRANCH" | grep -qiE "^grid/"; then
+  echo -e "${RED}BLOCKED:${NC} Branch name '$BRANCH' contains 'grid/' prefix."
+  echo "  Public repos must use main/feat/fix branch naming."
+  BLOCKED=1
+fi
+
+# --- Check staged file names for secrets ---
+for pattern in "${SECRET_PATTERNS[@]}"; do
+  MATCH=$(echo "$STAGED" | grep -E "$pattern" || true)
+  if [ -n "$MATCH" ]; then
+    echo -e "${RED}BLOCKED:${NC} Staged file matches secret pattern: $pattern"
+    echo "  File: $MATCH"
+    BLOCKED=1
+  fi
+done
+
+# --- Check staged diff content for Grid program names ---
+for pattern in "${GRID_PROGRAMS[@]}"; do
+  # Only check added lines (lines starting with +, skip +++ header)
+  MATCH=$(echo "$DIFF_CONTENT" | grep -E '^\+[^+]' | grep -iE "$pattern" || true)
+  if [ -n "$MATCH" ]; then
+    echo -e "${RED}BLOCKED:${NC} Staged content contains Grid program reference: $pattern"
+    echo "  Match: $(echo "$MATCH" | head -1 | sed 's/^+/  /')"
+    BLOCKED=1
+  fi
+done
+
+# --- Check staged diff content for Grid architecture terms ---
+for term in "${GRID_TERMS[@]}"; do
+  MATCH=$(echo "$DIFF_CONTENT" | grep -E '^\+[^+]' | grep -E "$term" || true)
+  if [ -n "$MATCH" ]; then
+    echo -e "${RED}BLOCKED:${NC} Staged content contains Grid architecture reference: $term"
+    echo "  Match: $(echo "$MATCH" | head -1 | sed 's/^+/  /')"
+    BLOCKED=1
+  fi
+done
+
+# --- Check staged diff content for API keys ---
+for pattern in "${KEY_PATTERNS[@]}"; do
+  MATCH=$(echo "$DIFF_CONTENT" | grep -E '^\+[^+]' | grep -E "$pattern" || true)
+  if [ -n "$MATCH" ]; then
+    echo -e "${RED}BLOCKED:${NC} Staged content contains potential secret: $pattern"
+    echo -e "  ${YELLOW}Review carefully before committing.${NC}"
+    BLOCKED=1
+  fi
+done
+
+# --- Result ---
+if [ "$BLOCKED" -ne 0 ]; then
+  echo ""
+  echo -e "${YELLOW}Commit blocked by arsenal-pre-commit-hook.${NC}"
+  echo "Fix the issues above or use --no-verify to bypass (NOT recommended for public repos)."
+  exit 1
+fi
+
+exit 0
