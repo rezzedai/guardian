@@ -128,6 +128,38 @@ function extractSubcommands(command: string): string[] {
   return subs;
 }
 
+/** Strip content inside single and double quotes, leaving only unquoted portions */
+export function stripQuotedStrings(text: string): string {
+  let result = '';
+  let inSingle = false;
+  let inDouble = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+
+    // Handle escape sequences (only in double quotes)
+    if (ch === '\\' && inDouble && i + 1 < text.length) {
+      i++; // skip escaped char
+      continue;
+    }
+
+    if (ch === "'" && !inDouble) {
+      inSingle = !inSingle;
+      continue;
+    }
+    if (ch === '"' && !inSingle) {
+      inDouble = !inDouble;
+      continue;
+    }
+
+    if (!inSingle && !inDouble) {
+      result += ch;
+    }
+  }
+
+  return result;
+}
+
 function matchPatterns(text: string, patterns: CompiledPattern[]): CompiledPattern | null {
   for (const p of patterns) {
     p.regex.lastIndex = 0;
@@ -147,17 +179,19 @@ export function checkBlocklist(input: HookInput, policy: Policy): ValidationResu
   if (tool === "Bash") {
     const command = (toolInput.command as string) ?? "";
 
-    // Check full command string
+    // Check full command string (stripped of quoted content to prevent false positives)
     const cmdPatterns = patterns.get("commands") ?? [];
-    const fullMatch = matchPatterns(command, cmdPatterns);
+    const strippedCommand = stripQuotedStrings(command);
+    const fullMatch = matchPatterns(strippedCommand, cmdPatterns);
     if (fullMatch) {
       return { allowed: false, reason: fullMatch.reason, severity: fullMatch.severity, pattern: fullMatch.source, source: "blocklist" };
     }
 
-    // Check each shell segment
+    // Check each shell segment (stripped of quoted content)
     const segments = splitShellCommand(command);
     for (const seg of segments) {
-      const segMatch = matchPatterns(seg, cmdPatterns);
+      const strippedSeg = stripQuotedStrings(seg);
+      const segMatch = matchPatterns(strippedSeg, cmdPatterns);
       if (segMatch) {
         return { allowed: false, reason: segMatch.reason, severity: segMatch.severity, pattern: segMatch.source, source: "blocklist" };
       }
