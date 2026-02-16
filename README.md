@@ -322,9 +322,9 @@ guardian ships with 50+ dangerous patterns built in — covering destructive com
 
 ---
 
-## Want More?
+## What's Next?
 
-guardian protects one agent session. **[Rezzed Grid-as-a-Service](https://rezzed.ai)** provides enterprise-grade security across multi-agent teams — with cross-session audit aggregation, real-time policy enforcement, and security reviews by dedicated audit agents.
+More tools coming from the @rezzedai toolkit. See [rezzed.ai](https://rezzed.ai) for updates.
 
 ---
 
