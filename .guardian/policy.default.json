@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "mode": "enforce",
+
+  "blocklist": {
+    "commands": [
+      {
+        "pattern": "rm\\s+(-[a-zA-Z]*f[a-zA-Z]*|--force)\\s",
+        "severity": "critical",
+        "reason": "Forced file deletion"
+      },
+      {
+        "pattern": "rm\\s+(-[a-zA-Z]*r[a-zA-Z]*|--recursive)\\s+/(?!tmp)",
+        "severity": "critical",
+        "reason": "Recursive deletion outside /tmp"
+      },
+      {
+        "pattern": "git\\s+push\\s+.*--force",
+        "severity": "high",
+        "reason": "Force push can destroy remote history"
+      },
+      {
+        "pattern": "git\\s+reset\\s+--hard",
+        "severity": "high",
+        "reason": "Hard reset destroys uncommitted work"
+      },
+      {
+        "pattern": "git\\s+clean\\s+.*-f",
+        "severity": "high",
+        "reason": "Git clean -f deletes untracked files permanently"
+      },
+      {
+        "pattern": "DROP\\s+(TABLE|DATABASE|INDEX)",
+        "severity": "critical",
+        "reason": "SQL destructive operation",
+        "flags": "i"
+      },
+      {
+        "pattern": "TRUNCATE\\s+TABLE",
+        "severity": "critical",
+        "reason": "SQL destructive operation",
+        "flags": "i"
+      },
+      {
+        "pattern": "\\bsudo\\b",
+        "severity": "high",
+        "reason": "Privilege escalation"
+      },
+      {
+        "pattern": "chmod\\s+777",
+        "severity": "high",
+        "reason": "World-writable permissions"
+      },
+      {
+        "pattern": "\\bchown\\s+root\\b",
+        "severity": "high",
+        "reason": "Ownership change to root"
+      },
+      {
+        "pattern": "curl\\s.*\\|\\s*(ba)?sh",
+        "severity": "critical",
+        "reason": "Remote code execution via pipe to shell"
+      },
+      {
+        "pattern": "\\beval\\b.*\\$",
+        "severity": "high",
+        "reason": "Dynamic eval with variable expansion"
+      },
+      {
+        "pattern": "\\bmkfs\\b",
+        "severity": "critical",
+        "reason": "Disk formatting"
+      },
+      {
+        "pattern": "\\bdd\\s+if=",
+        "severity": "critical",
+        "reason": "Raw disk write"
+      },
+      {
+        "pattern": "kill\\s+-9",
+        "severity": "high",
+        "reason": "Force kill process"
+      },
+      {
+        "pattern": "pkill\\s+-9",
+        "severity": "high",
+        "reason": "Force kill processes by name"
+      }
+    ],
+    "file_patterns": [
+      {
+        "pattern": "\\.env$",
+        "operations": ["write", "delete", "git_add"],
+        "severity": "high",
+        "reason": "Environment file with potential secrets"
+      },
+      {
+        "pattern": "credentials\\.json$",
+        "operations": ["write", "delete", "git_add"],
+        "severity": "critical",
+        "reason": "Credentials file"
+      },
+      {
+        "pattern": "id_rsa$|id_ed25519$|\\.pem$",
+        "operations": ["read", "write", "delete", "git_add"],
+        "severity": "critical",
+        "reason": "Private key file"
+      }
+    ],
+    "secret_patterns": [
+      {
+        "pattern": "(?:api[_-]?key|apikey|secret[_-]?key|access[_-]?token)\\s*[:=]\\s*['\"]?[A-Za-z0-9+/=_-]{20,}",
+        "severity": "high",
+        "reason": "Potential API key or secret in content",
+        "flags": "i"
+      },
+      {
+        "pattern": "-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----",
+        "severity": "critical",
+        "reason": "Private key in content"
+      },
+      {
+        "pattern": "AKIA[0-9A-Z]{16}",
+        "severity": "critical",
+        "reason": "AWS access key ID"
+      },
+      {
+        "pattern": "sk-[a-zA-Z0-9]{20,}",
+        "severity": "high",
+        "reason": "Potential API secret key (OpenAI, Stripe, etc.)"
+      }
+    ],
+    "network": [
+      {
+        "pattern": "169\\.254\\.169\\.254",
+        "severity": "critical",
+        "reason": "AWS metadata endpoint — SSRF vector"
+      },
+      {
+        "pattern": "metadata\\.google\\.internal",
+        "severity": "critical",
+        "reason": "GCP metadata endpoint — SSRF vector"
+      }
+    ]
+  },
+
+  "allowlist": {
+    "commands": [],
+    "paths": [],
+    "domains": []
+  },
+
+  "scope": {
+    "allowed_paths": ["{cwd}"],
+    "denied_paths": ["/etc", "/usr", "/var", "/sys", "/proc", "/boot"],
+    "allow_outside_cwd": false
+  },
+
+  "budget": {
+    "enabled": false,
+    "max_actions_per_session": 500,
+    "session_limit_usd": null,
+    "cost_file": ".guardian/costs.json",
+    "action_on_breach": "kill"
+  },
+
+  "audit": {
+    "enabled": true,
+    "path": ".guardian/audit.jsonl",
+    "include_tool_input": true,
+    "include_tool_output": false,
+    "integrity": "sha256-chain",
+    "max_file_size_mb": 50,
+    "rotation": "daily"
+  },
+
+  "kill_switch": {
+    "enabled": true,
+    "on_blocklist_critical": true,
+    "on_budget_breach": true,
+    "on_integrity_violation": true,
+    "exit_code": 2
+  }
+}
