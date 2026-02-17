@@ -70,7 +70,7 @@ To enable Guardian as a Claude Code hook, add to .claude/settings.local.json:
         "hooks": [
           {
             "type": "command",
-            "command": "npx @rezzedai/guardian validate",
+            "command": "npx @rezzed.ai/guardian validate",
             "timeout": 5
           }
         ]
