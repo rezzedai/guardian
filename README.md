@@ -1,4 +1,4 @@
-# @rezzedai/guardian
+# @rezzed.ai/guardian
 
 **Safety rails, audit trail, and budget enforcement for AI agent sessions.**
 
@@ -9,7 +9,7 @@
       "matcher": "",
       "hooks": [{
         "type": "command",
-        "command": "npx @rezzedai/guardian validate",
+        "command": "npx @rezzed.ai/guardian validate",
         "timeout": 5
       }]
     }]
@@ -34,7 +34,7 @@
 ## Install
 
 ```bash
-npm install @rezzedai/guardian
+npm install @rezzed.ai/guardian
 ```
 
 **Requirements:** Node.js 18+
@@ -64,7 +64,7 @@ Edit `.claude/settings.local.json`:
       "matcher": "",
       "hooks": [{
         "type": "command",
-        "command": "npx @rezzedai/guardian validate",
+        "command": "npx @rezzed.ai/guardian validate",
         "timeout": 5
       }]
     }]
@@ -324,7 +324,7 @@ guardian ships with 50+ dangerous patterns built in — covering destructive com
 
 ## What's Next?
 
-More tools coming from the @rezzedai toolkit. See [rezzed.ai](https://rezzed.ai) for updates.
+More tools coming from the @rezzed.ai toolkit. See [rezzed.ai](https://rezzed.ai) for updates.
 
 ---
 

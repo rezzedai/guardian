@@ -1,5 +1,5 @@
 {
-  "name": "@rezzedai/guardian",
+  "name": "@rezzed.ai/guardian",
   "version": "0.1.0",
   "description": "Safety rails, audit trail, and budget enforcement for AI agent sessions",
   "main": "dist/index.js",
