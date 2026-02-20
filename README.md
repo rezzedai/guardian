@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org)
 
-**Safety rails, audit trail, and budget enforcement for AI agent sessions.**
+**Pre-tool-use policy gate with audit trail and budget enforcement for Claude Code sessions.**
 
 ```json
 {
@@ -24,6 +24,8 @@
 ---
 
 ## What It Does
+
+guardian intercepts every tool invocation in Claude Code via pre-execution hooks. All calls are evaluated against configurable policies before execution is allowed:
 
 - **Blocks destructive commands** — `rm -rf`, `DROP TABLE`, `git push --force`, disk formatting, privilege escalation
 - **Prevents secret leaks** — detects API keys, AWS credentials, private keys in files and git commits
@@ -196,9 +198,19 @@ Audit log (.guardian/audit.jsonl)
 
 | Mode | Behavior |
 |------|----------|
-| `enforce` | Violations block execution |
-| `audit` | Violations logged but allowed |
+| `enforce` | Block violations |
+| `audit` | Log only |
 | `off` | All checks disabled |
+
+---
+
+## Design Constraints
+
+- LLM output is treated as untrusted until validated
+- All tool calls gated before execution, not after
+- Audit trail is append-only with cryptographic integrity verification
+- Zero external dependencies — pure Node.js, no supply chain risk
+- Kill switch terminates session on critical violations, no graceful degradation
 
 ---
 
@@ -338,4 +350,4 @@ MIT
 
 ---
 
-Built by [Rezzed.ai](https://rezzed.ai)
+**Built by:** [RezzedAI](https://rezzed.ai) — Infrastructure for bounded multi-agent systems.
