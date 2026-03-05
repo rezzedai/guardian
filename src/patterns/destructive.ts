@@ -58,4 +58,49 @@ export const DESTRUCTIVE_PATTERNS: CommandPattern[] = [
     severity: "high",
     reason: "Force kill processes by name",
   },
+  {
+    pattern: "\\bkillall\\b",
+    severity: "high",
+    reason: "Kill all processes by name",
+  },
+  {
+    pattern: "dd\\s+if=/dev/zero",
+    severity: "critical",
+    reason: "Disk wipe operation",
+  },
+  {
+    pattern: "systemctl\\s+stop",
+    severity: "high",
+    reason: "Stop system service",
+  },
+  {
+    pattern: "\\bservice\\s+\\w+\\s+stop",
+    severity: "high",
+    reason: "Stop system service",
+  },
+  {
+    pattern: "iptables\\s+-F",
+    severity: "critical",
+    reason: "Flush firewall rules",
+  },
+  {
+    pattern: "git\\s+branch\\s+-D",
+    severity: "high",
+    reason: "Force delete git branch",
+  },
+  {
+    pattern: "npm\\s+unpublish",
+    severity: "critical",
+    reason: "Unpublish package from registry",
+  },
+  {
+    pattern: "docker\\s+rm\\s+.*-f",
+    severity: "high",
+    reason: "Force remove Docker container",
+  },
+  {
+    pattern: "docker\\s+system\\s+prune",
+    severity: "high",
+    reason: "Remove all unused Docker objects",
+  },
 ];

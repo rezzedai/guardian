@@ -20,6 +20,11 @@
         "reason": "Force push can destroy remote history"
       },
       {
+        "pattern": "git\\s+push\\s+.*-f\\s",
+        "severity": "high",
+        "reason": "Force push can destroy remote history"
+      },
+      {
         "pattern": "git\\s+reset\\s+--hard",
         "severity": "high",
         "reason": "Hard reset destroys uncommitted work"
@@ -28,6 +33,36 @@
         "pattern": "git\\s+clean\\s+.*-f",
         "severity": "high",
         "reason": "Git clean -f deletes untracked files permanently"
+      },
+      {
+        "pattern": "git\\s+checkout\\s+\\.",
+        "severity": "high",
+        "reason": "Discard all working directory changes"
+      },
+      {
+        "pattern": "git\\s+checkout\\s+--\\s+\\.",
+        "severity": "high",
+        "reason": "Discard all working directory changes"
+      },
+      {
+        "pattern": "git\\s+rebase\\s+.*(?:main|master|develop)",
+        "severity": "medium",
+        "reason": "Rebase on shared branch — can rewrite history"
+      },
+      {
+        "pattern": "git\\s+push\\s+origin\\s+:",
+        "severity": "high",
+        "reason": "Delete remote branch"
+      },
+      {
+        "pattern": "git\\s+filter-branch",
+        "severity": "critical",
+        "reason": "History rewriting — destructive operation"
+      },
+      {
+        "pattern": "git\\s+branch\\s+-D",
+        "severity": "high",
+        "reason": "Force delete git branch"
       },
       {
         "pattern": "DROP\\s+(TABLE|DATABASE|INDEX)",
@@ -45,6 +80,46 @@
         "pattern": "\\bsudo\\b",
         "severity": "high",
         "reason": "Privilege escalation"
+      },
+      {
+        "pattern": "\\bsu\\s+-",
+        "severity": "high",
+        "reason": "Switch user to root"
+      },
+      {
+        "pattern": "\\bsu\\s+root",
+        "severity": "high",
+        "reason": "Switch user to root"
+      },
+      {
+        "pattern": "setuid|setgid",
+        "severity": "high",
+        "reason": "Set user/group ID on execution"
+      },
+      {
+        "pattern": "\\bmount\\s+",
+        "severity": "high",
+        "reason": "Mount filesystem — requires elevated privileges"
+      },
+      {
+        "pattern": "\\bumount\\s+",
+        "severity": "high",
+        "reason": "Unmount filesystem — requires elevated privileges"
+      },
+      {
+        "pattern": "crontab\\s+-e",
+        "severity": "high",
+        "reason": "Edit crontab — persistent execution"
+      },
+      {
+        "pattern": "\\bvisudo\\b",
+        "severity": "critical",
+        "reason": "Edit sudoers file"
+      },
+      {
+        "pattern": "/etc/sudoers",
+        "severity": "critical",
+        "reason": "Access to sudoers file"
       },
       {
         "pattern": "chmod\\s+777",
@@ -67,6 +142,51 @@
         "reason": "Dynamic eval with variable expansion"
       },
       {
+        "pattern": "wget\\s+https?://(?!localhost|127\\.0\\.0\\.1)",
+        "severity": "medium",
+        "reason": "Download from external host"
+      },
+      {
+        "pattern": "\\bnc\\s+-[a-zA-Z]*l",
+        "severity": "critical",
+        "reason": "Netcat listen mode — potential reverse shell"
+      },
+      {
+        "pattern": "\\bnetcat\\s+-[a-zA-Z]*l",
+        "severity": "critical",
+        "reason": "Netcat listen mode — potential reverse shell"
+      },
+      {
+        "pattern": "ssh\\s+.*-[a-zA-Z]*R",
+        "severity": "high",
+        "reason": "SSH reverse tunnel"
+      },
+      {
+        "pattern": "ssh\\s+.*-[a-zA-Z]*L",
+        "severity": "medium",
+        "reason": "SSH local port forwarding"
+      },
+      {
+        "pattern": "base64.*\\|\\s*curl",
+        "severity": "high",
+        "reason": "Base64 encode and exfiltrate via curl"
+      },
+      {
+        "pattern": "dig\\s+.*@(?!8\\.8\\.8\\.8|1\\.1\\.1\\.1)",
+        "severity": "medium",
+        "reason": "DNS query to non-standard server — potential DNS exfiltration"
+      },
+      {
+        "pattern": "nslookup.*\\$",
+        "severity": "medium",
+        "reason": "DNS query with variable expansion — potential DNS exfiltration"
+      },
+      {
+        "pattern": "rsync\\s+.*@[^:]+:",
+        "severity": "medium",
+        "reason": "Rsync to remote host"
+      },
+      {
         "pattern": "\\bmkfs\\b",
         "severity": "critical",
         "reason": "Disk formatting"
@@ -77,6 +197,11 @@
         "reason": "Raw disk write"
       },
       {
+        "pattern": "dd\\s+if=/dev/zero",
+        "severity": "critical",
+        "reason": "Disk wipe operation"
+      },
+      {
         "pattern": "kill\\s+-9",
         "severity": "high",
         "reason": "Force kill process"
@@ -85,6 +210,81 @@
         "pattern": "pkill\\s+-9",
         "severity": "high",
         "reason": "Force kill processes by name"
+      },
+      {
+        "pattern": "\\bkillall\\b",
+        "severity": "high",
+        "reason": "Kill all processes by name"
+      },
+      {
+        "pattern": "systemctl\\s+stop",
+        "severity": "high",
+        "reason": "Stop system service"
+      },
+      {
+        "pattern": "\\bservice\\s+\\w+\\s+stop",
+        "severity": "high",
+        "reason": "Stop system service"
+      },
+      {
+        "pattern": "iptables\\s+-F",
+        "severity": "critical",
+        "reason": "Flush firewall rules"
+      },
+      {
+        "pattern": "npm\\s+unpublish",
+        "severity": "critical",
+        "reason": "Unpublish package from registry"
+      },
+      {
+        "pattern": "docker\\s+rm\\s+.*-f",
+        "severity": "high",
+        "reason": "Force remove Docker container"
+      },
+      {
+        "pattern": "docker\\s+system\\s+prune",
+        "severity": "high",
+        "reason": "Remove all unused Docker objects"
+      },
+      {
+        "pattern": "npm\\s+install\\s+.*--registry\\s+(?!https://registry\\.npmjs\\.org)",
+        "severity": "medium",
+        "reason": "npm install from non-standard registry"
+      },
+      {
+        "pattern": "pip\\s+install\\s+https?://",
+        "severity": "medium",
+        "reason": "pip install from URL — untrusted package source"
+      },
+      {
+        "pattern": "pip\\s+install\\s+.*--index-url\\s+(?!https://pypi\\.org)",
+        "severity": "medium",
+        "reason": "pip install from non-standard index"
+      },
+      {
+        "pattern": "gem\\s+install\\s+.*--source\\s+(?!https://rubygems\\.org)",
+        "severity": "medium",
+        "reason": "gem install from non-standard source"
+      },
+      {
+        "pattern": "cargo\\s+install\\s+--git\\s+(?!https://github\\.com)",
+        "severity": "medium",
+        "reason": "cargo install from non-GitHub git source"
+      },
+      {
+        "pattern": "go\\s+get\\s+-u\\s+(?!github\\.com|golang\\.org)",
+        "severity": "medium",
+        "reason": "go get from potentially untrusted source"
+      },
+      {
+        "pattern": "apt-get\\s+install\\s+(?!.*--no-install-recommends).*[^=]$",
+        "severity": "low",
+        "reason": "apt-get install without version pinning"
+      },
+      {
+        "pattern": "docker\\s+pull\\s+(?!docker\\.io|ghcr\\.io|gcr\\.io)",
+        "severity": "medium",
+        "reason": "docker pull from non-standard registry"
       }
     ],
     "file_patterns": [
@@ -105,6 +305,30 @@
         "operations": ["read", "write", "delete", "git_add"],
         "severity": "critical",
         "reason": "Private key file"
+      },
+      {
+        "pattern": "\\.aws/credentials$",
+        "operations": ["read", "write", "delete", "git_add"],
+        "severity": "critical",
+        "reason": "AWS credentials file"
+      },
+      {
+        "pattern": "\\.ssh/authorized_keys$",
+        "operations": ["write", "delete", "git_add"],
+        "severity": "critical",
+        "reason": "SSH authorized keys file"
+      },
+      {
+        "pattern": "\\.docker/config\\.json$",
+        "operations": ["read", "write", "delete", "git_add"],
+        "severity": "high",
+        "reason": "Docker config with potential registry credentials"
+      },
+      {
+        "pattern": "\\.npmrc$",
+        "operations": ["read", "write", "delete", "git_add"],
+        "severity": "high",
+        "reason": "npm config with potential auth tokens"
       }
     ],
     "secret_patterns": [
@@ -128,6 +352,43 @@
         "pattern": "sk-[a-zA-Z0-9]{20,}",
         "severity": "high",
         "reason": "Potential API secret key (OpenAI, Stripe, etc.)"
+      },
+      {
+        "pattern": "aws_secret_access_key\\s*[:=]\\s*['\"]?[A-Za-z0-9+/]{40}",
+        "severity": "critical",
+        "reason": "AWS secret access key",
+        "flags": "i"
+      },
+      {
+        "pattern": "private_key.*:.*-----BEGIN",
+        "severity": "critical",
+        "reason": "GCP service account private key in JSON"
+      },
+      {
+        "pattern": "postgres://[^:]+:[^@]+@",
+        "severity": "high",
+        "reason": "Database connection string with credentials"
+      },
+      {
+        "pattern": "mysql://[^:]+:[^@]+@",
+        "severity": "high",
+        "reason": "Database connection string with credentials"
+      },
+      {
+        "pattern": "mongodb(\\+srv)?://[^:]+:[^@]+@",
+        "severity": "high",
+        "reason": "MongoDB connection string with credentials"
+      },
+      {
+        "pattern": "eyJ[a-zA-Z0-9_-]{20,}\\.[a-zA-Z0-9_-]{20,}\\.[a-zA-Z0-9_-]{20,}",
+        "severity": "high",
+        "reason": "JWT token"
+      },
+      {
+        "pattern": "Bearer\\s+[A-Za-z0-9+/=_-]{20,}",
+        "severity": "high",
+        "reason": "Bearer token in content",
+        "flags": "i"
       }
     ],
     "network": [
